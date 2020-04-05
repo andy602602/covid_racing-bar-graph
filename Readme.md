@@ -1,6 +1,6 @@
 COVID-19 (CORONA VIRUS) racing bar graph
 ====
-The corona virus getting nervous, And I afraid to go outside, so I decided to try my hand at making a pouplar bar chart racing graph to easy visual the spreading.
+The corona virus is getting nervous, and I am afraid to go outside, Therefore I decided to make a pouplar bar chart racing graph showing virus spreading.
 This code I wrote down in my free time, so maybe it's not good enough, please bear with me kekeke.
 
 Data resource from :
