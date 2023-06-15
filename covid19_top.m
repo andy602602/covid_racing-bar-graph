@@ -5,6 +5,7 @@ max_date = max(full_data.date);
 min_date = min(full_data.date);
 country = unique(full_data.location);
 rs_data = zeros(days(max_date - min_date)+1,4,length(country));
+
 %% Refill data, because some dates not continue
 refill_data = array2table([min_date:max_date]','VariableNames',{'date'});
 for k = 1:length(country)
@@ -15,9 +16,9 @@ for k = 1:length(country)
     sort_data = ismember(refill_data(:,1), tmp_data(:,1)).* [1:size(refill_data,1)]';
     sort_data(sort_data==0)='';
     rs_data(sort_data,:,k) = table2array(tmp_data(:,3:6));
-end
-%% Fill the date which didn't record 
-for k = 1:length(country)
+
+    
+    %% Fill the date which didn't record 
     for i = 1:size(rs_data)-1
         window = rs_data(i:i+1,3:4,k);
         if norm(window(1,:))~=0 && norm(window(2,:))==0
@@ -26,12 +27,25 @@ for k = 1:length(country)
         rs_data(i:i+1,3:4,k) = window;
     end
 end
+
+%% Fill the date which didn't record 
+% for k = 1:length(country)
+%     for i = 1:size(rs_data)-1
+%         window = rs_data(i:i+1,3:4,k);
+%         if norm(window(1,:))~=0 && norm(window(2,:))==0
+%             window(2,:) = window(1,:);
+%         end
+%         rs_data(i:i+1,3:4,k) = window;
+%     end
+% end
+
 %% Interpolation the data
 rs_data(:,:,42) = 0;  %except China
 ds = 0.05;
 covid_date = [1:size(rs_data,1)];
 covid_date_interp = [1:ds:size(rs_data,1)];
 rs_data_interp = interp1(covid_date',rs_data(:,3:4,:),covid_date_interp,'linear');
+
 %% Transfer the id of countries to sort number
 rank_tmp = zeros([size(rs_data_interp,3),size(rs_data_interp,1)]);
 cases_tmp = zeros([size(rs_data_interp,3),size(rs_data_interp,1)]);
@@ -46,6 +60,7 @@ for j = 1:size(rs_data_interp,1)
     rank_tmp(squeeze(I),j) = 1:length(I);
     cases_tmp(squeeze(I),j) = squeeze(rs_data_interp(j,1,I));
 end
+
 %% Smooth the bar changing anime
 tmp = zeros(1,size(rs_data_interp,3));
 rank_smooth = zeros(size(rs_data_interp,3),size(rs_data_interp,1));
@@ -54,6 +69,7 @@ for k = 1:size(rs_data_interp,3)
     tmp(tmp~=0) = smooth(tmp(tmp~=0));  %smooth is toolbox tool
     rank_smooth(k,:) = tmp;
 end
+
 %% Plot racing barrr
 handle_figure = figure(1);
 handle_figure.Position = [63,1,1304,690];
@@ -65,7 +81,6 @@ h = linspace(0,240,size(rs_data_interp,3))/360;
 s = repmat(1,1,size(rs_data_interp,3));
 v = repmat(1,1,size(rs_data_interp,3));
 country_colormap_full = squeeze(hsv2rgb(h,s,v));
-% country_colormap_full = country_colormap_full(randsample(size(rs_data_interp,3)*5,size(rs_data_interp,3)),:,:);
 country_colormap_full = country_colormap_full(randperm(size(rs_data_interp,3)),:,:);
 
 country_ticks = cell2table(country);
@@ -136,11 +151,13 @@ for j = st_date*(1/ds)+1:size(rs_data_interp,1)
     frame(j) = getframe(gcf);
     pause(0.01)
 end
+
 %% Record as video
 %=====clear the empty frames=====%
 frame_tmp = reshape(struct2cell(frame),2,[])';
 frame_tmp = frame_tmp(~cellfun(@isempty,frame_tmp(:,1)),:);
 frame_tmp = cell2struct(frame_tmp,{'cdata','colormap'},2);
+
 %=====clear the empty frames=====%
 v = VideoWriter('covid-19_top_04043.mp4');
 v.FrameRate = 20;
